@@ -23,6 +23,7 @@ public:
 	bool isValid() const;       	// 유효한 매핑 여부
 	PacketGroup getHeader();
 	std::vector<short> getData();
+	int cursor_int() {return read_data;}
 
 private:
 	int mid_;
@@ -32,6 +33,7 @@ private:
 	bool valid_;
 	char* cursor_;
 	PacketGroup group_;
+	int read_data = 0;
 
 	void mapFile(const std::string& filename);
 	void unmapFile();

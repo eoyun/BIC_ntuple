@@ -9,8 +9,8 @@ PacketGroup DAQTypeAParser::parseHeader(const char* data, size_t size) {
     header.raw_bytes = raw;
 
 
-    int data_length;
-    int tcb_trigger_number;
+    int data_length = 0;
+    int tcb_trigger_number = 0;
     unsigned long long tcb_trigger_time = 0;
     int channel = 0;
 

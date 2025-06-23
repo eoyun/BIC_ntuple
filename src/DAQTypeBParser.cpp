@@ -2,17 +2,8 @@
 #include "DAQTypeBParser.h"
 #include "PacketHeader.h"
 #include <cstring>
-
-template<typename T>
-std::vector<std::vector<T>> splitVector(const std::vector<T>& input, size_t chunkSize) {
-    std::vector<std::vector<T>> result;
-    size_t total = input.size();
-    for (size_t i = 0; i < total; i += chunkSize) {
-        size_t end = std::min(i + chunkSize, total);
-        result.emplace_back(input.begin() + i, input.begin() + end);
-    }
-    return result;
-}
+#include <iostream>
+#include "functions.h"
 
 PacketGroup DAQTypeBParser::parseHeader(const char* data, size_t size) {
     PacketGroup group;
@@ -23,8 +14,8 @@ PacketGroup DAQTypeBParser::parseHeader(const char* data, size_t size) {
     	header.raw_bytes = splitted.at(i);
 
 
-    	int data_length;
-   	int tcb_trigger_number;
+    	int data_length=0;
+   	int tcb_trigger_number=0;
 	unsigned long long tcb_trigger_time = 0;
 	int channel = 0;
 	
@@ -45,6 +36,16 @@ PacketGroup DAQTypeBParser::parseHeader(const char* data, size_t size) {
 
 	group.multi_headers.push_back(header);
     }  
+    //for (int i = 0;i<32;i++){
+    //    for (int j =0;j<4;j++){
+    //	    std::cout<<std::hex<<static_cast<unsigned int>(static_cast<unsigned char>(raw.at(i*4 + j)))<<" | ";
+    //    }
+    //    std::cout<<" |||| ";
+    //    for (int j =0;j<4;j++){
+    //	    std::cout<<std::hex<<static_cast<unsigned int>(static_cast<unsigned char>(splitted.at(j).at(i)))<<" | ";
+    //    }
+    //    std::cout<<std::endl;
+    //}
     group.is_multi = true;
     return group;
 

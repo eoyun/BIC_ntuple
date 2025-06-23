@@ -105,6 +105,7 @@ const char* getFile::data() const {
 }
 
 const char* getFile::cursor()  const {
+	//std::cout<<"test : "<<cursor_<<std::endl;
 	return cursor_;
 }
 
@@ -119,7 +120,8 @@ bool getFile::isValid() const {
 PacketGroup getFile::getHeader(){
 	PacketGroup group = parser_->parseHeader(cursor_, filesize_);
 	group_ = group;
-	std::cout<<"header info : MID -> "<<mid_<<" channel -> "<<group.multi_headers.at(1).channel<<" data_length -> "<<group.multi_headers.at(1).data_length<<" trigger number -> "<<group.multi_headers.at(1).tcb_trigger_number<<std::endl;
+	//std::cout<<"header info : MID -> "<<mid_<<" channel -> "<<group.multi_headers.at(1).channel<<" data_length -> "<<group.multi_headers.at(1).data_length<<" trigger number -> "<<group.multi_headers.at(1).tcb_trigger_number<<std::endl;
+	std::cout<<"header info : MID -> "<<mid_<<" channel -> "<<group.single_header.channel<<" data_length -> "<<group.single_header.data_length<<" trigger number -> "<<group.single_header.tcb_trigger_number<<std::endl;
     	return group;
 	//const char* ptr = cursor_;
 	//const char* end = mapped_ + size();
@@ -171,10 +173,12 @@ PacketGroup getFile::getHeader(){
 std::vector<short> getFile::getData(){
     	if (group_.is_multi){
 	       	cursor_ += parser_->eventSize(group_.multi_headers.at(1));
+	       	read_data += (int) parser_->eventSize(group_.multi_headers.at(1));
 		return parser_->parseData(cursor_, filesize_,group_.multi_headers.at(1));
 	}
 	else {
 		cursor_ += parser_->eventSize(group_.single_header); // 다음 이벤트로 이동
+		read_data += (int) parser_->eventSize(group_.single_header); // 다음 이벤트로 이동
 		return parser_->parseData(cursor_, filesize_,group_.single_header);
 
 	}
