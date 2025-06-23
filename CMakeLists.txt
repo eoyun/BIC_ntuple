@@ -14,10 +14,11 @@ add_subdirectory(src)
 
 # main 파일을 실행 파일로 빌드
 add_executable(BinaryToRoot main.cpp)
-target_link_libraries(BinaryToRoot test ${ROOT_LIBRARIES})
-target_link_libraries(BinaryToRoot getFile ${ROOT_LIBRARIES})
-target_link_libraries(BinaryToRoot DAQTypeAParser ${ROOT_LIBRARIES})
-target_link_libraries(BinaryToRoot DAQTypeBParser ${ROOT_LIBRARIES})
+target_link_libraries(BinaryToRoot test 
+	getFile
+	DAQTypeAParser
+	DAQTypeBParser
+	${ROOT_LIBRARIES})
 
 # 설치 설정
 install(TARGETS BinaryToRoot DESTINATION bin)

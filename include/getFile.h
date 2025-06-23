@@ -6,6 +6,7 @@
 #include <vector>
 #include <cstddef>  // for size_t
 #include "PacketHeader.h"
+#include "AbstractDAQParser.h"
 
 namespace fs = std::filesystem;
 
@@ -20,7 +21,7 @@ public:
 	const char* cursor() const;       // 매핑된 데이터의 시작 주소
 	size_t size() const;            // 매핑된 데이터 크기
 	bool isValid() const;       	// 유효한 매핑 여부
-	PacketHeader getHeader();
+	PacketGroup getHeader();
 	std::vector<short> getData();
 
 private:
@@ -30,10 +31,12 @@ private:
 	size_t filesize_;    // 파일 크기
 	bool valid_;
 	char* cursor_;
-	PacketHeader header_;
+	PacketGroup group_;
 
 	void mapFile(const std::string& filename);
 	void unmapFile();
+
+	std::unique_ptr<AbstractDAQParser> parser_;
 };
 
 #endif
