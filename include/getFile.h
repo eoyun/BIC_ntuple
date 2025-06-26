@@ -21,9 +21,14 @@ public:
 	const char* cursor() const;       // 매핑된 데이터의 시작 주소
 	size_t size() const;            // 매핑된 데이터 크기
 	bool isValid() const;       	// 유효한 매핑 여부
-	PacketGroup getHeader();
-	std::vector<short> getData();
+	PacketGroup getNextHeader();
+	std::vector<short> getNextData();
+	PacketGroup getHeader(const char* pointer_);
+	std::vector<short> getData(const char* pointer_, PacketGroup group);
 	int cursor_int() {return read_data;}
+	bool isMulti() const;
+	bool isEnd();
+	int MID() {return mid_;}
 
 private:
 	int mid_;
@@ -34,6 +39,8 @@ private:
 	char* cursor_;
 	PacketGroup group_;
 	int read_data = 0;
+	bool multi_ = false;
+	bool end_ = false;
 
 	void mapFile(const std::string& filename);
 	void unmapFile();

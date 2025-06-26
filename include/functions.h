@@ -3,6 +3,15 @@
 #include <cstring>
 #include <vector>
 
+struct Mapping {
+    int MID;
+    int ch;
+    std::string name;
+    
+    bool operator<(const Mapping& other) const {
+        return std::tie(MID, ch, name) < std::tie(other.MID, other.ch, other.name);
+    }
+};
 
 template<typename T>
 std::vector<std::vector<T>> splitVector(const std::vector<T>& input, size_t chunkSize) {

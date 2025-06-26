@@ -24,7 +24,10 @@ PacketGroup DAQTypeAParser::parseHeader(const char* data, size_t size) {
     
     //int mid = ((int)header[15] & 0xFF);
     channel = ((int)raw.at(16) & 0xFF);
-    header.data_length = data_length;
+    if (data_length <10000 && data_length>0)
+        header.data_length = data_length;
+    else header.data_length = 512;
+	
     header.tcb_trigger_time = tcb_trigger_time;
     header.tcb_trigger_number = tcb_trigger_number;
     header.channel = channel;
