@@ -16,16 +16,16 @@ PacketGroup DAQTypeBParser::parseHeader(const char* data, size_t size) {
 
     	int data_length=0;
    	int tcb_trigger_number=0;
-	unsigned long long tcb_trigger_time = 0;
+	long long tcb_trigger_time = 0;
 	int channel = 0;
 	
-	for (int a=0; a<4; a++) data_length += ((int)(splitted.at(i).at(a) & 0xFF) << 8*a);
+	for (int a=0; a<4; a++) data_length += ((unsigned int)(splitted.at(i).at(a) & 0xFF) << 8*a);
 	
-	for (int a=0; a<4; a++) tcb_trigger_number += ((int)(splitted.at(i).at(a+7) & 0xFF) << 8*a);
-	int tcb_trigger_fine_time = ((int)splitted.at(i).at(11) & 0xFF);
+	for (int a=0; a<4; a++) tcb_trigger_number += ((unsigned int)(splitted.at(i).at(a+7) & 0xFF) << 8*a);
+	int tcb_trigger_fine_time = ((unsigned int)splitted.at(i).at(11) & 0xFF);
 	int tcb_trigger_coarse_time = 0;
-	for (int a=0; a<3; a++) tcb_trigger_coarse_time += ((int)(splitted.at(i).at(a+12) & 0xFF) << 8*a);
-	tcb_trigger_time = (tcb_trigger_fine_time * 8) + (tcb_trigger_coarse_time * 1000);
+	for (int a=0; a<3; a++) tcb_trigger_coarse_time += ((unsigned int)(splitted.at(i).at(a+12) & 0xFF) << 8*a);
+	tcb_trigger_time = (long long)tcb_trigger_fine_time * 8 + (long long)tcb_trigger_coarse_time * 1000;
 	
 	//int mid = ((int)header[15] & 0xFF);
 	channel = ((int)splitted.at(i).at(16) & 0xFF);

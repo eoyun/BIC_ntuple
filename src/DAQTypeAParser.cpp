@@ -1,6 +1,7 @@
 // DAQTypeAParser.cpp
 #include "DAQTypeAParser.h"
 #include <cstring>
+#include <iostream>
 
 PacketGroup DAQTypeAParser::parseHeader(const char* data, size_t size) {
     PacketGroup group;
@@ -11,16 +12,17 @@ PacketGroup DAQTypeAParser::parseHeader(const char* data, size_t size) {
 
     int data_length = 0;
     int tcb_trigger_number = 0;
-    unsigned long long tcb_trigger_time = 0;
+    long long tcb_trigger_time = 0;
     int channel = 0;
 
-    for (int a=0; a<4; a++) data_length += ((int)(raw.at(a) & 0xFF) << 8*a);
+    for (int a=0; a<4; a++) data_length += ((unsigned int)(raw.at(a) & 0xFF) << 8*a);
     
-    for (int a=0; a<4; a++) tcb_trigger_number += ((int)(raw.at(a+7) & 0xFF) << 8*a);
-    int tcb_trigger_fine_time = ((int)raw.at(11) & 0xFF);
+    for (int a=0; a<4; a++) tcb_trigger_number += ((unsigned int)(raw.at(a+7) & 0xFF) << 8*a);
+    int tcb_trigger_fine_time = ((unsigned int)raw.at(11) & 0xFF);
     int tcb_trigger_coarse_time = 0;
-    for (int a=0; a<3; a++) tcb_trigger_coarse_time += ((int)(raw.at(a+12) & 0xFF) << 8*a);
-    tcb_trigger_time = (tcb_trigger_fine_time * 8) + (tcb_trigger_coarse_time * 1000);
+    for (int a=0; a<3; a++) tcb_trigger_coarse_time += ((unsigned int)(raw.at(a+12) & 0xFF) << 8*a);
+    tcb_trigger_time = (long long)tcb_trigger_fine_time * 8 + (long long)tcb_trigger_coarse_time * 1000;
+    //std::cout<<"| "<<tcb_trigger_coarse_time<<" | "<<tcb_trigger_fine_time<<" | "<<tcb_trigger_time<<" |"<<std::endl;
     
     //int mid = ((int)header[15] & 0xFF);
     channel = ((int)raw.at(16) & 0xFF);
