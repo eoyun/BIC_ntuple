@@ -144,16 +144,17 @@ PacketGroup getFile::getNextHeader(){
     	return group;
 } 
 
+// out-dated function
 std::vector<short> getFile::getNextData(){
     	if (multi_){
 	       	cursor_ += parser_->eventSize(group_.multi_headers.at(1));
 	       	read_data += (int) parser_->eventSize(group_.multi_headers.at(1));
-		return parser_->parseData(cursor_, filesize_,group_.multi_headers.at(1));
+		return parser_->parseData(cursor_, filesize_,group_.multi_headers.at(1),-1);
 	}
 	else {
 		cursor_ += parser_->eventSize(group_.single_header); // 다음 이벤트로 이동
 		read_data += (int) parser_->eventSize(group_.single_header); // 다음 이벤트로 이동
-		return parser_->parseData(cursor_, filesize_,group_.single_header);
+		return parser_->parseData(cursor_, filesize_,group_.single_header,-1);
 
 	}
 
@@ -164,7 +165,26 @@ PacketGroup getFile::getHeader(const char * pointer_){
 	return group;
 }
 
-std::vector<short> getFile::getData(const char * pointer_, PacketGroup group){
-	if (multi_) return parser_->parseData(pointer_,filesize_,group.multi_headers.at(1));
-	else return parser_->parseData(pointer_,filesize_,group.single_header);
+std::vector<short> getFile::getData(const char * pointer_, PacketGroup group, int channel){
+	if (multi_) return parser_->parseData(pointer_,filesize_,group.multi_headers.at(1),channel);
+	else return parser_->parseData(pointer_,filesize_,group.single_header,channel);
 }
+PacketGroup getFile::getCurrentHeader(){
+	PacketGroup group = parser_->parseHeader(cursor_, filesize_);
+	group_ = group;
+    	return group;
+}
+
+void getFile::getNextPacket(){
+	if (multi_){
+	       	cursor_ += parser_->eventSize(group_.multi_headers.at(1));
+	       	read_data += (int) parser_->eventSize(group_.multi_headers.at(1));
+	}
+	else {
+		cursor_ += parser_->eventSize(group_.single_header); // 다음 이벤트로 이동
+		read_data += (int) parser_->eventSize(group_.single_header); // 다음 이벤트로 이동
+	}
+
+
+}
+

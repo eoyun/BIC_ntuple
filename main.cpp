@@ -8,6 +8,7 @@
 #include "TTree.h"
 #include <unordered_map>
 #include <chrono>
+#include "CaloMap_ch.h"
 
 
 int main( int argc, char * argv[]) {
@@ -26,8 +27,10 @@ int main( int argc, char * argv[]) {
     std::vector MIDs = getMID(runnum);
 
     // Get mapping information 
-    std::vector<Mapping> mapping_info;
-    mapping_info = getMap("../map/TB202503.txt");
+    //std::vector<Mapping> mapping_info;
+    //mapping_info = getMap("../map/TB202503.txt");
+    auto oldMap = GetCaloChMap();
+    auto newMap = getChInfo(oldMap);
 
     // Prepare the file readers for each datafile
     std::vector<getFile*> files;
@@ -46,7 +49,7 @@ int main( int argc, char * argv[]) {
     TTree *t = new TTree("event_build","event_build");
     
     // Prepare branches
-    std::vector<int> MID, ch, trigger_number, data_length;
+    std::vector<int> MID, ch, trigger_number, data_length, lr, modid, col, row, isY;
     std::vector<unsigned long long> trigger_time;
     std::vector<std::string> name;
     std::vector<short> waveform_total;
@@ -54,15 +57,21 @@ int main( int argc, char * argv[]) {
 
     t->Branch("MID",&MID);
     t->Branch("ch",&ch);
+    t->Branch("lr",&lr);
+    t->Branch("modid",&modid);
+    t->Branch("col",&col);
+    t->Branch("row",&row);
+    t->Branch("isY",&isY);
     t->Branch("trigger_number",&trigger_number);
     t->Branch("trigger_time",&trigger_time);
     t->Branch("data_length",&data_length);
-    t->Branch("name",&name);
+    //t->Branch("name",&name);
     t->Branch("waveform_total",&waveform_total);
     t->Branch("waveform_idx",&waveform_idx);
     
     // Initialize address vector structure
-    for (auto i : mapping_info) {
+    //for (auto i : mapping_info) {
+    for (auto i : newMap) {
     	std::vector<const char*> tmp;
 	address_vector.push_back(tmp);
     }
@@ -84,20 +93,24 @@ int main( int argc, char * argv[]) {
 
     	for (auto f : files){
 	    if (!f->isEnd()) {
-		tmp_group = f->getNextHeader();
+		tmp_group = f->getCurrentHeader();
 
-		for (int i=0;i< (int) mapping_info.size();i++) {
+		//for (int i=0;i< (int) mapping_info.size();i++) {
+		for (int i=0;i< (int) newMap.size();i++) {
 		    if (!tmp_group.is_multi){
-		        if (f->MID() == mapping_info.at(i).MID && tmp_group.single_header.channel == mapping_info.at(i).ch){
+		        //if (f->MID() == mapping_info.at(i).MID && tmp_group.single_header.channel == mapping_info.at(i).ch){
+		        if (f->MID() == newMap.at(i).mid && tmp_group.single_header.channel == newMap.at(i).ch){
 		    	    address_vector.at(i).push_back(f->cursor());
 		        }
 		    } else {
-		        if (f->MID() == mapping_info.at(i).MID){
+		        //if (f->MID() == mapping_info.at(i).MID){
+		        if (f->MID() == newMap.at(i).mid){
 		    	    address_vector.at(i).push_back(f->cursor());
 		        }
 		       
 		    }
 		}
+		f->getNextPacket();
 	    }
 	    else all_file ++;
 	}
@@ -119,7 +132,8 @@ int main( int argc, char * argv[]) {
     while (iloop < (int) loop_end){
         if (iloop%100== 0) std::cout<<iloop<<" / "<<loop_end<<" taken"<<std::endl;
 
-	int file_idx_tmp = mid_to_index.at(mapping_info[0].MID);
+	//int file_idx_tmp = mid_to_index.at(mapping_info[0].MID);
+	int file_idx_tmp = mid_to_index.at(newMap[0].mid);
 	PacketGroup p_tmp = files.at(file_idx_tmp)->getHeader(address_vector.at(0).at(0));
 	iloop ++;
         
@@ -128,8 +142,11 @@ int main( int argc, char * argv[]) {
     	
 	for (int j=0;j<(int)address_vector.size();j++){
 	    bool flag = false;
-	    for (int k = 0; k< (int) address_vector.at(j).size(); k++){
-	        int file_idx =  mid_to_index.at(mapping_info[j].MID);
+	    int loop_size = (1000 > (int) address_vector.at(j).size()) ? (int) address_vector.at(j).size() : 1000;
+	    //for (int k = 0; k< (int) address_vector.at(j).size(); k++){
+	    for (int k = 0; k< loop_size; k++){
+	        //int file_idx =  mid_to_index.at(mapping_info[j].MID);
+	        int file_idx =  mid_to_index.at(newMap[j].mid);
 		const char* access_address = address_vector.at(j).at(k);
 	        PacketGroup p = files.at(file_idx)->getHeader(access_address);
 
@@ -138,7 +155,7 @@ int main( int argc, char * argv[]) {
 		    if (p.single_header.tcb_trigger_time != trig_time_tmp || p.single_header.tcb_trigger_number != trig_num_tmp) continue;
 	            
 		    waveform_idx.push_back(waveform_total.size());	
-	            std::vector<short> tmp_waveform  =files.at(file_idx)->getData(access_address,p);
+	            std::vector<short> tmp_waveform  =files.at(file_idx)->getData(access_address,p,-1);
 	            waveform_total.insert(waveform_total.end(),tmp_waveform.begin(),tmp_waveform.end());
 	            trigger_number.push_back(p.single_header.tcb_trigger_number);
 	            trigger_time.push_back(p.single_header.tcb_trigger_time);
@@ -147,13 +164,14 @@ int main( int argc, char * argv[]) {
 		    flag = true;
 		    break;
 	        }else  {
-	            int tmp_ch = mapping_info.at(j).ch;
+	            //int tmp_ch = mapping_info.at(j).ch;
+	            int tmp_ch = newMap.at(j).ch;
 		    //if (p.multi_headers.at(tmp_ch - 1).tcb_trigger_time != trig_time_tmp && p.multi_headers.at(tmp_ch - 1).tcb_trigger_number != trig_num_tmp) continue;
 		    if (p.multi_headers.at(tmp_ch - 1).tcb_trigger_time != trig_time_tmp || p.multi_headers.at(tmp_ch - 1).tcb_trigger_number != trig_num_tmp) continue;
 	            
 		    waveform_idx.push_back(waveform_total.size());	
-	            std::vector<std::vector<short>> tmp_waveform = splitVector(files.at(file_idx)->getData(access_address,p),p.multi_headers.at(tmp_ch-1).data_length/2 - 16);
-	            waveform_total.insert(waveform_total.end(),tmp_waveform.at(tmp_ch-1).begin(),tmp_waveform.at(tmp_ch - 1).end());
+	            std::vector<short> tmp_waveform = files.at(file_idx)->getData(access_address,p,tmp_ch - 1);
+	            waveform_total.insert(waveform_total.end(),tmp_waveform.begin(),tmp_waveform.end());
 	            trigger_number.push_back(p.multi_headers.at(tmp_ch - 1).tcb_trigger_number);
 	            trigger_time.push_back(p.multi_headers.at(tmp_ch - 1).tcb_trigger_time);
 	            data_length.push_back(p.multi_headers.at(tmp_ch - 1).data_length/2 - 16);
@@ -164,9 +182,16 @@ int main( int argc, char * argv[]) {
 	    }
 	    if (!flag) continue; 
 	    // Save the mapping info of each channels
-	    MID.push_back(mapping_info.at(j).MID);
-	    ch.push_back(mapping_info.at(j).ch);
-	    name.push_back(mapping_info.at(j).name);
+	    //MID.push_back(mapping_info.at(j).MID);
+	    //ch.push_back(mapping_info.at(j).ch);
+	    //name.push_back(mapping_info.at(j).name);
+	    MID.push_back(newMap.at(j).mid);
+	    ch.push_back(newMap.at(j).ch);
+	    lr.push_back(newMap.at(j).lr);
+	    modid.push_back(newMap.at(j).modid);
+	    col.push_back(newMap.at(j).col);
+	    row.push_back(newMap.at(j).row);
+	    isY.push_back(newMap.at(j).isY);
 	    
 	}
 
@@ -180,7 +205,11 @@ int main( int argc, char * argv[]) {
 	trigger_number.clear();
 	MID.clear();
 	ch.clear();
-	name.clear();
+	lr.clear();
+	modid.clear();
+	col.clear();
+	row.clear();
+	isY.clear();
 	data_length.clear();
     }
 

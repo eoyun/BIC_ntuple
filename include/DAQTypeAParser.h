@@ -8,7 +8,7 @@
 class DAQTypeAParser : public AbstractDAQParser {
 public:
     PacketGroup parseHeader(const char* data, size_t size) override;
-    std::vector<short> parseData(const char* data, size_t size, const PacketHeader& header) override;
+    std::vector<short> parseData(const char* data, size_t size, const PacketHeader& header, int channel) override;
     size_t eventSize(const PacketHeader& header) const override;
 };
 

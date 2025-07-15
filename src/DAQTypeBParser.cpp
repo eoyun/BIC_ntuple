@@ -51,13 +51,13 @@ PacketGroup DAQTypeBParser::parseHeader(const char* data, size_t size) {
 
 }
 
-std::vector<short> DAQTypeBParser::parseData(const char* data, size_t size, const PacketHeader& header) {
+std::vector<short> DAQTypeBParser::parseData(const char* data, size_t size, const PacketHeader& header, int channel) {
     std::vector<short> result;
-    const short* ptr = reinterpret_cast<const short*>(data + 128);
-    int n_samples = (header.data_length * 4 - 128) / sizeof(short);
+    int n_samples = (header.data_length * 4 - 128) / sizeof(short) / 4;
 
     for (int i = 0; i < n_samples; ++i) {
-        result.push_back(ptr[i]);
+	short tmp =(short)(data[128 + i * 8 + channel] & 0xFF) + (short)((data[128 + i * 8 + 4 + channel] & 0xF) << 8);
+        result.push_back(tmp);
     }
 
     return result;

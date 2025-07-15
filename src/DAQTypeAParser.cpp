@@ -38,7 +38,7 @@ PacketGroup DAQTypeAParser::parseHeader(const char* data, size_t size) {
     return group;
 }
 
-std::vector<short> DAQTypeAParser::parseData(const char* data, size_t size, const PacketHeader& header) {
+std::vector<short> DAQTypeAParser::parseData(const char* data, size_t size, const PacketHeader& header, int channel) {
     std::vector<short> result;
     const short* ptr = reinterpret_cast<const short*>(data+32);
     int n_samples = (header.data_length - 32) / sizeof(short);

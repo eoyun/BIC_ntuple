@@ -21,10 +21,12 @@ public:
 	const char* cursor() const;       // 매핑된 데이터의 시작 주소
 	size_t size() const;            // 매핑된 데이터 크기
 	bool isValid() const;       	// 유효한 매핑 여부
+	PacketGroup getCurrentHeader();
+	void getNextPacket();
 	PacketGroup getNextHeader();
 	std::vector<short> getNextData();
 	PacketGroup getHeader(const char* pointer_);
-	std::vector<short> getData(const char* pointer_, PacketGroup group);
+	std::vector<short> getData(const char* pointer_, PacketGroup group, int channel);
 	int cursor_int() {return read_data;}
 	bool isMulti() const;
 	bool isEnd();

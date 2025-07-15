@@ -2,6 +2,8 @@
 #include "functions.h"
 #include <vector>
 #include <string>
+#include "CaloMap_ch.h"
+#include "getMap.h"
 
 std::vector<Mapping> getMap(const char* filename){
 	FILE* fp;
@@ -26,5 +28,30 @@ std::vector<Mapping> getMap(const char* filename){
 	}
 	fclose(fp);
 	return result;
+}
+
+std::vector<ChInfo> getChInfo(const map<pair<int,int>, vector<int>>& chMap)
+{
+    std::vector<ChInfo> vec;
+
+    for (const auto& kv : chMap) {
+        const auto& key = kv.first;
+        const auto& val = kv.second;
+
+        if (val.size() != 5) continue; // 안전 체크
+
+        ChInfo info;
+        info.mid   = key.first;
+        info.ch    = key.second;
+        info.lr    = val[0];
+        info.modid = val[1];
+        info.col   = val[2];
+        info.row   = val[3];
+        info.isY   = val[4];
+
+        vec.push_back(info);
+    }
+
+    return vec;
 }
 
