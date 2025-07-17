@@ -9,6 +9,9 @@
 #include <unordered_map>
 #include <chrono>
 #include "CaloMap_ch.h"
+#include <filesystem>
+#include "TString.h"
+namespace fs = std::filesystem;
 
 
 int main( int argc, char * argv[]) {
@@ -17,14 +20,21 @@ int main( int argc, char * argv[]) {
     auto start = std::chrono::high_resolution_clock::now();
 
     // Parse run number from command line
-    int runnum = atoi(argv[1]);
+    int runnum;
+    if (argc == 2)
+        runnum = atoi(argv[1]);
+    else {
+	std::cerr<<"Usage : "<<argv[0]<<" [runnum]"<<std::endl;
+	return 1;
+
+    }
 
     Converter converter;
     converter.printMessage();
     std::cout<<"run number is "<<runnum<<std::endl;
     
     // Get list of MID values in data files
-    std::vector MIDs = getMID(runnum);
+    std::vector<int> MIDs = getMID(runnum);
 
     // Get mapping information 
     //std::vector<Mapping> mapping_info;
@@ -45,9 +55,17 @@ int main( int argc, char * argv[]) {
     std::vector<std::vector<const char*>> address_vector;
     
     // Initialize root file
-    TFile *f_root = new TFile("test.root","recreate");
-    TTree *t = new TTree("event_build","event_build");
-    
+    std::string folder_path = "/home/kobic/KEKTB202503/ntuple/Run_" + std::to_string(runnum);
+    if (!fs::exists(folder_path)) fs::create_directories(folder_path);
+
+    int file_iter = 0;
+
+    TFile *f_root = nullptr;
+    f_root = new TFile(TString(folder_path)+Form("/event_build_%d.root",file_iter),"recreate");
+    TTree *t = nullptr;
+    t = new TTree("event_build","event_build");
+
+
     // Prepare branches
     std::vector<int> MID, ch, trigger_number, data_length, lr, modid, col, row, isY;
     std::vector<unsigned long long> trigger_time;
@@ -197,6 +215,28 @@ int main( int argc, char * argv[]) {
 
 	// Save event to TTree
 	t->Fill();
+
+	if (iloop%1000 == 0){
+	    t->Write();
+	    f_root->Close();
+	    delete f_root;
+	    f_root = nullptr;
+            t = nullptr;
+
+            file_iter++;
+            f_root = new TFile(TString(folder_path) + Form("/event_build_%d.root", file_iter), "recreate");
+            t = new TTree("event_build", "event_build");
+
+            t->Branch("MID", &MID);
+            t->Branch("ch", &ch);
+            t->Branch("trigger_number", &trigger_number);
+            t->Branch("trigger_time", &trigger_time);
+            t->Branch("data_length", &data_length);
+            t->Branch("name", &name);
+            t->Branch("waveform_total", &waveform_total);
+            t->Branch("waveform_idx", &waveform_idx);
+
+	}
 
 	// Clear all buffers for next event
 	waveform_idx.clear();

@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
 
 std::vector<int> getMID (int runnum){
 	std::vector<int> MIDs;
-	std::string path = "/pnfs/knu.ac.kr/data/cms/store/user/yeo/KEKTB202503/Run_" +std::to_string(runnum);
+	std::string path = "/home/kobic/KEKTB202503/RawData/Run_" +std::to_string(runnum);
 	if (!fs::exists(path)) {
 		std::cerr << "Path does not exist: " << path << std::endl;
 		return MIDs;
@@ -45,16 +45,16 @@ getFile::getFile(const int runnum, const int MID)
 {
 	std::string filename;
 	if (MID<20){ 
-		filename = "/pnfs/knu.ac.kr/data/cms/store/user/yeo/KEKTB202503/Run_" +std::to_string(runnum) +"/Run_"+std::to_string(runnum)+"_MID_"+std::to_string(MID)+"/FADCData_"+std::to_string(MID)+"_"+std::to_string(runnum)+".dat";
+		filename = "/home/kobic/KEKTB202503/RawData/Run_" +std::to_string(runnum) +"/Run_"+std::to_string(runnum)+"_MID_"+std::to_string(MID)+"/FADCData_"+std::to_string(MID)+"_"+std::to_string(runnum)+".dat";
 		parser_ = std::make_unique<DAQTypeBParser>();
 		multi_ = true;
 	}
 	else if (MID<40) {
-		filename = "/pnfs/knu.ac.kr/data/cms/store/user/yeo/KEKTB202503/Run_" +std::to_string(runnum) +"/Run_"+std::to_string(runnum)+"_MID_"+std::to_string(MID)+"/jbnu_daq_"+std::to_string(MID)+"_"+std::to_string(runnum)+".dat";
+		filename = "/home/kobic/KEKTB202503/RawData/Run_" +std::to_string(runnum) +"/Run_"+std::to_string(runnum)+"_MID_"+std::to_string(MID)+"/jbnu_daq_"+std::to_string(MID)+"_"+std::to_string(runnum)+".dat";
 		parser_ = std::make_unique<DAQTypeAParser>();
 	}
 	else if (MID<50){
-	       filename = "/pnfs/knu.ac.kr/data/cms/store/user/yeo/KEKTB202503/Run_" +std::to_string(runnum) +"/Run_"+std::to_string(runnum)+"_MID_"+std::to_string(MID)+"/bic_daq_"+std::to_string(MID)+"_"+std::to_string(runnum)+".dat";
+	       filename = "/home/kobic/KEKTB202503/RawData/Run_" +std::to_string(runnum) +"/Run_"+std::to_string(runnum)+"_MID_"+std::to_string(MID)+"/bic_daq_"+std::to_string(MID)+"_"+std::to_string(runnum)+".dat";
 		parser_ = std::make_unique<DAQTypeAParser>();
 	}
 	mapFile(filename);
