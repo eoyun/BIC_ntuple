@@ -30,7 +30,24 @@ std::vector<int> getMID (int runnum){
 			if (std::regex_search(sub_path,match,pattern)){
 				int MID = std::stoi(match[1]);
 				std::cout<<"MID is "<<MID<<std::endl;
-				MIDs.push_back(MID);
+				// check if corresponding .dat file exists and is non-empty
+				std::string datfile;
+				if (MID < 20) {
+					datfile = sub_path + "/FADCData_" + std::to_string(MID) + "_" + std::to_string(runnum) + ".dat";
+				} else if (MID < 40) {
+					datfile = sub_path + "/jbnu_daq_" + std::to_string(MID) + "_" + std::to_string(runnum) + ".dat";
+				} else if (MID < 50) {
+					datfile = sub_path + "/bic_daq_" + std::to_string(MID) + "_" + std::to_string(runnum) + ".dat";
+				} else {
+					continue;  // unknown MID range
+				}
+
+				if (fs::exists(datfile) && fs::file_size(datfile) > 0) {
+					std::cout << "MID is " << MID << std::endl;
+					MIDs.push_back(MID);
+				} else {
+					std::cerr << "Empty or missing file for MID " << MID << ": " << datfile << std::endl;
+				}
 			}
 			else std::cerr << "Pattern not matched!" << std::endl;
 		}

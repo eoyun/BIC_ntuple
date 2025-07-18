@@ -162,9 +162,11 @@ int main( int argc, char * argv[]) {
 	    bool flag = false;
 	    int loop_size = (1000 > (int) address_vector.at(j).size()) ? (int) address_vector.at(j).size() : 1000;
 	    //for (int k = 0; k< (int) address_vector.at(j).size(); k++){
+	    if (mid_to_index.find(newMap[j].mid) == mid_to_index.end()) continue;
+	
+	    int file_idx =  mid_to_index.at(newMap[j].mid);
 	    for (int k = 0; k< loop_size; k++){
 	        //int file_idx =  mid_to_index.at(mapping_info[j].MID);
-	        int file_idx =  mid_to_index.at(newMap[j].mid);
 		const char* access_address = address_vector.at(j).at(k);
 	        PacketGroup p = files.at(file_idx)->getHeader(access_address);
 
