@@ -61,7 +61,7 @@ int main( int argc, char * argv[]) {
     int file_iter = 0;
 
     TFile *f_root = nullptr;
-    f_root = new TFile(TString(folder_path)+Form("/event_build_%d.root",file_iter),"recreate");
+    f_root = new TFile(TString(folder_path)+Form("/Run_%d_event_build_%d.root",runnum,file_iter),"recreate");
     TTree *t = nullptr;
     t = new TTree("event_build","event_build");
 
@@ -170,20 +170,7 @@ int main( int argc, char * argv[]) {
 		const char* access_address = address_vector.at(j).at(k);
 	        PacketGroup p = files.at(file_idx)->getHeader(access_address);
 
-	        if (!p.is_multi){
-		    //if (p.single_header.tcb_trigger_time != trig_time_tmp && p.single_header.tcb_trigger_number != trig_num_tmp) continue;
-		    if (p.single_header.tcb_trigger_time != trig_time_tmp || p.single_header.tcb_trigger_number != trig_num_tmp) continue;
-	            
-		    waveform_idx.push_back(waveform_total.size());	
-	            std::vector<short> tmp_waveform  =files.at(file_idx)->getData(access_address,p,-1);
-	            waveform_total.insert(waveform_total.end(),tmp_waveform.begin(),tmp_waveform.end());
-	            trigger_number.push_back(p.single_header.tcb_trigger_number);
-	            trigger_time.push_back(p.single_header.tcb_trigger_time);
-	            data_length.push_back(p.single_header.data_length/2 - 16);
-		    address_vector.at(j).erase(address_vector.at(j).begin() + k);
-		    flag = true;
-		    break;
-	        }else  {
+	        if (p.is_multi){
 	            //int tmp_ch = mapping_info.at(j).ch;
 	            int tmp_ch = newMap.at(j).ch;
 		    //if (p.multi_headers.at(tmp_ch - 1).tcb_trigger_time != trig_time_tmp && p.multi_headers.at(tmp_ch - 1).tcb_trigger_number != trig_num_tmp) continue;
@@ -198,6 +185,34 @@ int main( int argc, char * argv[]) {
 		    address_vector.at(j).erase(address_vector.at(j).begin() + k);
 		    flag = true;
 	            break;
+	        }else if (p.is_bic){
+		    //if (p.single_header.tcb_trigger_time != trig_time_tmp && p.single_header.tcb_trigger_number != trig_num_tmp) continue;
+		    if (p.single_header.tcb_trigger_time != trig_time_tmp || p.single_header.tcb_trigger_number != trig_num_tmp) continue;
+	            
+		    waveform_idx.push_back(waveform_total.size());	
+	            std::vector<short> tmp_waveform  =files.at(file_idx)->getData(access_address,p,-1);
+	            waveform_total.insert(waveform_total.end(),tmp_waveform.begin(),tmp_waveform.end());
+	            trigger_number.push_back(p.single_header.tcb_trigger_number);
+	            trigger_time.push_back(p.single_header.tcb_trigger_time);
+	            data_length.push_back(p.single_header.data_length/4 - 8);
+		    address_vector.at(j).erase(address_vector.at(j).begin() + k);
+		    flag = true;
+		    break;
+		
+		}
+		else  {
+		    //if (p.single_header.tcb_trigger_time != trig_time_tmp && p.single_header.tcb_trigger_number != trig_num_tmp) continue;
+		    if (p.single_header.tcb_trigger_time != trig_time_tmp || p.single_header.tcb_trigger_number != trig_num_tmp) continue;
+	            
+		    waveform_idx.push_back(waveform_total.size());	
+	            std::vector<short> tmp_waveform  =files.at(file_idx)->getData(access_address,p,-1);
+	            waveform_total.insert(waveform_total.end(),tmp_waveform.begin(),tmp_waveform.end());
+	            trigger_number.push_back(p.single_header.tcb_trigger_number);
+	            trigger_time.push_back(p.single_header.tcb_trigger_time);
+	            data_length.push_back(p.single_header.data_length/2 - 16);
+		    address_vector.at(j).erase(address_vector.at(j).begin() + k);
+		    flag = true;
+		    break;
 	        }
 	    }
 	    if (!flag) continue; 
@@ -226,15 +241,19 @@ int main( int argc, char * argv[]) {
             t = nullptr;
 
             file_iter++;
-            f_root = new TFile(TString(folder_path) + Form("/event_build_%d.root", file_iter), "recreate");
+            f_root = new TFile(TString(folder_path) + Form("/Run_%d_event_build_%d.root",runnum, file_iter), "recreate");
             t = new TTree("event_build", "event_build");
 
             t->Branch("MID", &MID);
             t->Branch("ch", &ch);
+            t->Branch("lr",&lr);
+            t->Branch("modid",&modid);
+            t->Branch("col",&col);
+            t->Branch("row",&row);
+            t->Branch("isY",&isY);
             t->Branch("trigger_number", &trigger_number);
             t->Branch("trigger_time", &trigger_time);
             t->Branch("data_length", &data_length);
-            t->Branch("name", &name);
             t->Branch("waveform_total", &waveform_total);
             t->Branch("waveform_idx", &waveform_idx);
 

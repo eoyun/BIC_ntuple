@@ -10,6 +10,7 @@
 #include <sys/stat.h>    // fstat
 #include "DAQTypeAParser.h"
 #include "DAQTypeBParser.h"
+#include "DAQTypeDParser.h"
 
 namespace fs = std::filesystem;
 
@@ -72,7 +73,8 @@ getFile::getFile(const int runnum, const int MID)
 	}
 	else if (MID<50){
 	       filename = "/home/kobic/KEKTB202503/RawData/Run_" +std::to_string(runnum) +"/Run_"+std::to_string(runnum)+"_MID_"+std::to_string(MID)+"/bic_daq_"+std::to_string(MID)+"_"+std::to_string(runnum)+".dat";
-		parser_ = std::make_unique<DAQTypeAParser>();
+		parser_ = std::make_unique<DAQTypeDParser>();
+		bic_ = true;
 	}
 	mapFile(filename);
 	mid_ = MID;
@@ -133,6 +135,10 @@ size_t getFile::size() const {
 
 bool getFile::isValid() const {
 	return valid_;
+}
+
+bool getFile::isBIC() const {
+	return bic_;
 }
 
 bool getFile::isMulti() const {

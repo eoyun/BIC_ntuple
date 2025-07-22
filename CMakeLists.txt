@@ -44,6 +44,7 @@ target_link_libraries(BinaryToRoot
     getFile
     DAQTypeAParser
     DAQTypeBParser
+    DAQTypeDParser
     getMap
     dictlib  # <- 반드시 dictionary 링크
     ${ROOT_LIBRARIES}

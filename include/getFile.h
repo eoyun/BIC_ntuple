@@ -29,6 +29,7 @@ public:
 	std::vector<short> getData(const char* pointer_, PacketGroup group, int channel);
 	int cursor_int() {return read_data;}
 	bool isMulti() const;
+	bool isBIC() const;
 	bool isEnd();
 	int MID() {return mid_;}
 
@@ -42,6 +43,7 @@ private:
 	PacketGroup group_;
 	int read_data = 0;
 	bool multi_ = false;
+	bool bic_ = false;
 	bool end_ = false;
 
 	void mapFile(const std::string& filename);

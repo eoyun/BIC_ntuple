@@ -26,6 +26,7 @@ struct PacketGroup {
 
     // 플래그로 구분
     bool is_multi = false;
+    bool is_bic = false;
 };
 
 #endif // PACKET_HEADER_H
