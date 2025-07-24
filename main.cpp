@@ -55,13 +55,17 @@ int main( int argc, char * argv[]) {
     std::vector<std::vector<const char*>> address_vector;
     
     // Initialize root file
-    std::string folder_path = "/home/kobic/KEKTB202503/ntuple/Run_" + std::to_string(runnum);
+    //std::string folder_path = "/home/kobic/KEKTB202503/ntuple/Run_" + std::to_string(runnum);
+    //std::string folder_path = "../Output/Run_" + std::to_string(runnum);
+	char buffer[100];
+    snprintf(buffer, sizeof(buffer), "../Output/Run_%05d", runnum);
+    std::string folder_path(buffer);
     if (!fs::exists(folder_path)) fs::create_directories(folder_path);
 
     int file_iter = 0;
 
     TFile *f_root = nullptr;
-    f_root = new TFile(TString(folder_path)+Form("/Run_%d_event_build_%d.root",runnum,file_iter),"recreate");
+    f_root = new TFile(TString(folder_path)+Form("/Run_%05d_event_build_%d.root",runnum,file_iter),"recreate");
     TTree *t = nullptr;
     t = new TTree("event_build","event_build");
 
@@ -106,7 +110,7 @@ int main( int argc, char * argv[]) {
     
     // Distribute addresses into address vector based on header matching
     while (all_file != files.size()){
-        if (iloop%100 == 0) std::cout<<iloop<<" taken"<<std::endl;
+        if (iloop%10000 == 0) std::cout<<iloop<<" taken"<<std::endl;
 	all_file = 0;
 
     	for (auto f : files){
@@ -118,6 +122,7 @@ int main( int argc, char * argv[]) {
 		    if (!tmp_group.is_multi){
 		        //if (f->MID() == mapping_info.at(i).MID && tmp_group.single_header.channel == mapping_info.at(i).ch){
 		        if (f->MID() == newMap.at(i).mid && tmp_group.single_header.channel == newMap.at(i).ch){
+					//std::cout << f->MID() << " " << newMap.at(i).mid << " " << tmp_group.single_header.channel << " " << newMap.at(i).ch << std::endl;
 		    	    address_vector.at(i).push_back(f->cursor());
 		        }
 		    } else {
@@ -131,9 +136,9 @@ int main( int argc, char * argv[]) {
 		f->getNextPacket();
 	    }
 	    else all_file ++;
-	}
+	}//files
 	iloop ++;
-    }
+    }//while
 
     // Determine the minimum number of events among all channels
     auto it = std::min_element(
@@ -145,24 +150,27 @@ int main( int argc, char * argv[]) {
     iloop = 0;
     int loop_end = it->size();
     std::cout<<"total evt : "<<loop_end<<std::endl;
-    
+
     // Main event building loop 
     while (iloop < (int) loop_end){
-        if (iloop%100== 0) std::cout<<iloop<<" / "<<loop_end<<" taken"<<std::endl;
+        if (iloop%1000== 0) std::cout<<iloop<<" / "<<loop_end<<" taken"<<std::endl;
 
 	//int file_idx_tmp = mid_to_index.at(mapping_info[0].MID);
 	int file_idx_tmp = mid_to_index.at(newMap[0].mid);
 	PacketGroup p_tmp = files.at(file_idx_tmp)->getHeader(address_vector.at(0).at(0));
 	iloop ++;
-        
+
 	unsigned long long trig_time_tmp = p_tmp.multi_headers.at(1).tcb_trigger_time;
 	int trig_num_tmp = p_tmp.multi_headers.at(1).tcb_trigger_number;
+
     	
 	for (int j=0;j<(int)address_vector.size();j++){
 	    bool flag = false;
 	    int loop_size = (1000 > (int) address_vector.at(j).size()) ? (int) address_vector.at(j).size() : 1000;
 	    //for (int k = 0; k< (int) address_vector.at(j).size(); k++){
-	    if (mid_to_index.find(newMap[j].mid) == mid_to_index.end()) continue;
+	    if (mid_to_index.find(newMap[j].mid) == mid_to_index.end()){
+			continue;
+		}
 	
 	    int file_idx =  mid_to_index.at(newMap[j].mid);
 	    for (int k = 0; k< loop_size; k++){
@@ -174,7 +182,7 @@ int main( int argc, char * argv[]) {
 	            //int tmp_ch = mapping_info.at(j).ch;
 	            int tmp_ch = newMap.at(j).ch;
 		    //if (p.multi_headers.at(tmp_ch - 1).tcb_trigger_time != trig_time_tmp && p.multi_headers.at(tmp_ch - 1).tcb_trigger_number != trig_num_tmp) continue;
-		    if (p.multi_headers.at(tmp_ch - 1).tcb_trigger_time != trig_time_tmp || p.multi_headers.at(tmp_ch - 1).tcb_trigger_number != trig_num_tmp) continue;
+				if (p.multi_headers.at(tmp_ch - 1).tcb_trigger_time != trig_time_tmp || p.multi_headers.at(tmp_ch - 1).tcb_trigger_number != trig_num_tmp) continue;
 	            
 		    waveform_idx.push_back(waveform_total.size());	
 	            std::vector<short> tmp_waveform = files.at(file_idx)->getData(access_address,p,tmp_ch - 1);
@@ -187,7 +195,7 @@ int main( int argc, char * argv[]) {
 	            break;
 	        }else if (p.is_bic){
 		    //if (p.single_header.tcb_trigger_time != trig_time_tmp && p.single_header.tcb_trigger_number != trig_num_tmp) continue;
-		    if (p.single_header.tcb_trigger_time != trig_time_tmp || p.single_header.tcb_trigger_number != trig_num_tmp) continue;
+				if (p.single_header.tcb_trigger_time != trig_time_tmp || p.single_header.tcb_trigger_number != trig_num_tmp) continue;
 	            
 		    waveform_idx.push_back(waveform_total.size());	
 	            std::vector<short> tmp_waveform  =files.at(file_idx)->getData(access_address,p,-1);
@@ -202,8 +210,8 @@ int main( int argc, char * argv[]) {
 		}
 		else  {
 		    //if (p.single_header.tcb_trigger_time != trig_time_tmp && p.single_header.tcb_trigger_number != trig_num_tmp) continue;
-		    if (p.single_header.tcb_trigger_time != trig_time_tmp || p.single_header.tcb_trigger_number != trig_num_tmp) continue;
-	            
+			if (p.single_header.tcb_trigger_time != trig_time_tmp || p.single_header.tcb_trigger_number != trig_num_tmp) continue;
+
 		    waveform_idx.push_back(waveform_total.size());	
 	            std::vector<short> tmp_waveform  =files.at(file_idx)->getData(access_address,p,-1);
 	            waveform_total.insert(waveform_total.end(),tmp_waveform.begin(),tmp_waveform.end());
@@ -233,7 +241,7 @@ int main( int argc, char * argv[]) {
 	// Save event to TTree
 	t->Fill();
 
-	if (iloop%1000 == 0){
+	if (iloop%100000 == 0){
 	    t->Write();
 	    f_root->Close();
 	    delete f_root;
@@ -241,7 +249,7 @@ int main( int argc, char * argv[]) {
             t = nullptr;
 
             file_iter++;
-            f_root = new TFile(TString(folder_path) + Form("/Run_%d_event_build_%d.root",runnum, file_iter), "recreate");
+            f_root = new TFile(TString(folder_path) + Form("/Run_%05d_event_build_%d.root",runnum, file_iter), "recreate");
             t = new TTree("event_build", "event_build");
 
             t->Branch("MID", &MID);

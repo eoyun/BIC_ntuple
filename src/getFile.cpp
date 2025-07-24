@@ -1,5 +1,6 @@
 #include "getFile.h"
 #include <iostream>
+#include <sstream>
 #include <filesystem>
 #include <vector>
 #include <regex>
@@ -16,12 +17,54 @@ namespace fs = std::filesystem;
 
 std::vector<int> getMID (int runnum){
 	std::vector<int> MIDs;
-	std::string path = "/home/kobic/KEKTB202503/RawData/Run_" +std::to_string(runnum);
+	//std::string path = "/home/kobic/KEKTB202503/RawData/Run_" +std::to_string(runnum);
+	std::string path = "/home/kobic/25CERNData";
 	if (!fs::exists(path)) {
 		std::cerr << "Path does not exist: " << path << std::endl;
 		return MIDs;
 	}
 
+	char buffer[100];
+	snprintf(buffer, sizeof(buffer), "Run_%05d", runnum);
+	std::string keyword(buffer);
+
+	try {
+		for (const auto& entry : fs::directory_iterator(path)) {
+			if (entry.is_regular_file()) {
+				std::string filename = entry.path().filename().string();
+				if (filename.find(keyword) != std::string::npos) {
+					//std::cout << filename << std::endl;
+
+					std::stringstream ss(filename);
+					std::string token;
+					std::vector<std::string> parts;
+
+					while (std::getline(ss, token, '_')) {
+						parts.push_back(token);
+					}
+
+					size_t dot_pos = parts.back().find('.');
+					if (dot_pos != std::string::npos) {
+						parts.back() = parts.back().substr(0, dot_pos);
+					}
+					//std::cout << parts[2] << " " << parts[3] << std::endl;
+
+					//if ( parts[2]!="APIX" ){
+					if ( parts[2]=="FADC" || parts[2]=="JBNU" || parts[2]=="BIC" ){
+						MIDs.push_back(stoi(parts[3]));
+						std::cout << filename << std::endl;
+					}
+				}
+			}
+		}
+	} catch (const fs::filesystem_error& e) {
+		std::cerr << "Filesystem error: " << e.what() << '\n';
+	} catch (const std::exception& e) {
+		std::cerr << "General error: " << e.what() << '\n';
+	}
+	
+
+	/*
 	for (const auto& entry : fs::recursive_directory_iterator(path)) {
 		if (entry.is_directory()) {
 			std::cout << "Directory: " << entry.path() << std::endl;
@@ -54,6 +97,7 @@ std::vector<int> getMID (int runnum){
 		}
 
 	}
+	*/
 	return MIDs;
 
 }
@@ -61,18 +105,25 @@ std::vector<int> getMID (int runnum){
 getFile::getFile(const int runnum, const int MID)
 	: fd_(-1),filesize_(0),mapped_(nullptr),valid_(false)
 {
+	char buffer[100];
 	std::string filename;
 	if (MID<20){ 
-		filename = "/home/kobic/KEKTB202503/RawData/Run_" +std::to_string(runnum) +"/Run_"+std::to_string(runnum)+"_MID_"+std::to_string(MID)+"/FADCData_"+std::to_string(MID)+"_"+std::to_string(runnum)+".dat";
+		//filename = "/home/kobic/KEKTB202503/RawData/Run_" +std::to_string(runnum) +"/Run_"+std::to_string(runnum)+"_MID_"+std::to_string(MID)+"/FADCData_"+std::to_string(MID)+"_"+std::to_string(runnum)+".dat";
+		snprintf(buffer, sizeof(buffer), "/home/kobic/25CERNData/Run_%05d_FADC_%d.dat", runnum, MID);
+		filename = buffer;
 		parser_ = std::make_unique<DAQTypeBParser>();
 		multi_ = true;
 	}
 	else if (MID<40) {
-		filename = "/home/kobic/KEKTB202503/RawData/Run_" +std::to_string(runnum) +"/Run_"+std::to_string(runnum)+"_MID_"+std::to_string(MID)+"/jbnu_daq_"+std::to_string(MID)+"_"+std::to_string(runnum)+".dat";
+		//filename = "/home/kobic/KEKTB202503/RawData/Run_" +std::to_string(runnum) +"/Run_"+std::to_string(runnum)+"_MID_"+std::to_string(MID)+"/jbnu_daq_"+std::to_string(MID)+"_"+std::to_string(runnum)+".dat";
+		snprintf(buffer, sizeof(buffer), "/home/kobic/25CERNData/Run_%05d_JBNU_%d.dat", runnum, MID);
+		filename = buffer;
 		parser_ = std::make_unique<DAQTypeAParser>();
 	}
 	else if (MID<50){
-	       filename = "/home/kobic/KEKTB202503/RawData/Run_" +std::to_string(runnum) +"/Run_"+std::to_string(runnum)+"_MID_"+std::to_string(MID)+"/bic_daq_"+std::to_string(MID)+"_"+std::to_string(runnum)+".dat";
+		//filename = "/home/kobic/KEKTB202503/RawData/Run_" +std::to_string(runnum) +"/Run_"+std::to_string(runnum)+"_MID_"+std::to_string(MID)+"/bic_daq_"+std::to_string(MID)+"_"+std::to_string(runnum)+".dat";
+		snprintf(buffer, sizeof(buffer), "/home/kobic/25CERNData/Run_%05d_BIC_%d.dat", runnum, MID);
+		filename = buffer;
 		parser_ = std::make_unique<DAQTypeDParser>();
 		bic_ = true;
 	}
