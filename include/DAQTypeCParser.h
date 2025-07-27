@@ -1,17 +1,17 @@
-#ifndef DAQ_TYPE_A_PARSER_H
-#define DAQ_TYPE_A_PARSER_H
+#ifndef DAQ_TYPE_C_PARSER_H
+#define DAQ_TYPE_C_PARSER_H
 
 #include "AbstractDAQParser.h"
 
-// TypeA : jbnu & bic
+// TypeC : apix
 
-class DAQTypeAParser : public AbstractDAQParser {
+class DAQTypeCParser : public AbstractDAQParser {
 public:
     PacketGroup parseHeader(const char* data, size_t size) override;
     std::vector<short> parseData(const char* data, size_t size, const PacketHeader& header, int channel) override;
     size_t eventSize(const PacketHeader& header) const override;
-    size_t eventSize(const char* data) const override;//dummy function
-    size_t findEnd(size_t filesize, const char* data) const override;//dummy function
+    size_t eventSize(const char* data) const override;
+    size_t findEnd(size_t filesize,const char* data) const;
 };
 
 #endif

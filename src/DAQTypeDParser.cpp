@@ -1,9 +1,9 @@
 // DAQTypeAParser.cpp
-#include "DAQTypeAParser.h"
+#include "DAQTypeDParser.h"
 #include <cstring>
 #include <iostream>
 
-PacketGroup DAQTypeAParser::parseHeader(const char* data, size_t size) {
+PacketGroup DAQTypeDParser::parseHeader(const char* data, size_t size) {
     PacketGroup group;
     PacketHeader header;
     std::vector<char> raw(data, data + 32);
@@ -44,26 +44,26 @@ PacketGroup DAQTypeAParser::parseHeader(const char* data, size_t size) {
     return group;
 }
 
-std::vector<short> DAQTypeAParser::parseData(const char* data, size_t size, const PacketHeader& header, int channel) {
+std::vector<short> DAQTypeDParser::parseData(const char* data, size_t size, const PacketHeader& header, int channel) {
     std::vector<short> result;
     const short* ptr = reinterpret_cast<const short*>(data+32);
     int n_samples = (header.data_length - 32) / sizeof(short);
 
-    for (int i = 0; i < n_samples; ++i) {
-        result.push_back(ptr[i]);
+    for (int i = 0; i < n_samples/2; ++i) {
+        result.push_back(ptr[i*2]);
     }
 
     return result;
 }
 
-size_t DAQTypeAParser::eventSize(const PacketHeader& header) const {
+size_t DAQTypeDParser::eventSize(const PacketHeader& header) const {
     return static_cast<size_t>(header.data_length);
 }
 
-size_t DAQTypeAParser::eventSize(const char* data) const{
+size_t DAQTypeDParser::eventSize(const char* data) const{
     return 0;
 }
 
-size_t DAQTypeAParser::findEnd(size_t filesize,const char* data) const{
+size_t DAQTypeDParser::findEnd(size_t filesize,const char* data) const{
     return 0;
 }

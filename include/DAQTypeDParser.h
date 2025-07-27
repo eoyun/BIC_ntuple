@@ -1,11 +1,11 @@
-#ifndef DAQ_TYPE_A_PARSER_H
-#define DAQ_TYPE_A_PARSER_H
+#ifndef DAQ_TYPE_D_PARSER_H
+#define DAQ_TYPE_D_PARSER_H
 
 #include "AbstractDAQParser.h"
 
 // TypeA : jbnu & bic
 
-class DAQTypeAParser : public AbstractDAQParser {
+class DAQTypeDParser : public AbstractDAQParser {
 public:
     PacketGroup parseHeader(const char* data, size_t size) override;
     std::vector<short> parseData(const char* data, size_t size, const PacketHeader& header, int channel) override;

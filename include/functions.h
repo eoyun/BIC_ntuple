@@ -28,3 +28,12 @@ std::vector<std::vector<T>> splitVector(const std::vector<T>& input, size_t chun
     }
     return result;
 }
+
+inline unsigned short Flip( unsigned short A, int nbit){
+  unsigned short B = 0;
+  for( int i = 0; i< nbit; i++){
+    B += (((A >> i) & 0x1) << ( nbit -1 - i ));
+  }
+  return B;
+}
+

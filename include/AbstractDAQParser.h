@@ -16,6 +16,8 @@ public:
 
     // 한 이벤트당 전체 길이 (header + data)
     virtual size_t eventSize(const PacketHeader& header) const = 0;
+    virtual size_t eventSize(const char* data) const = 0;
+    virtual size_t findEnd(size_t filesize, const char* data) const = 0;
 };
 
 #endif

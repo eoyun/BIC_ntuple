@@ -17,6 +17,7 @@ PacketGroup DAQTypeBParser::parseHeader(const char* data, size_t size) {
     	int data_length=0;
    	int tcb_trigger_number=0;
 	unsigned long long tcb_trigger_time = 0;
+	unsigned long long local_trigger_time = 0;
 	int channel = 0;
 	
 	for (int a=0; a<4; a++) data_length += ((unsigned int)(splitted.at(i).at(a) & 0xFF) << 8*a);
@@ -26,11 +27,16 @@ PacketGroup DAQTypeBParser::parseHeader(const char* data, size_t size) {
 	int tcb_trigger_coarse_time = 0;
 	for (int a=0; a<3; a++) tcb_trigger_coarse_time += ((unsigned int)(splitted.at(i).at(a+12) & 0xFF) << 8*a);
 	tcb_trigger_time = (unsigned long long)tcb_trigger_fine_time * 8 + (unsigned long long)tcb_trigger_coarse_time * 1000;
+	int local_trigger_fine_time = ((unsigned int)splitted.at(i).at(25) & 0xFF);
+	int local_trigger_coarse_time = 0;
+	for (int a=0; a<6; a++) local_trigger_coarse_time += ((unsigned int)(splitted.at(i).at(a+26) & 0xFF) << 8*a);
+	local_trigger_time = (unsigned long long)local_trigger_fine_time * 8 + (unsigned long long)local_trigger_coarse_time * 1000;
 	
 	//int mid = ((int)header[15] & 0xFF);
 	channel = ((int)splitted.at(i).at(16) & 0xFF);
 	header.data_length = data_length;
 	header.tcb_trigger_time = tcb_trigger_time;
+	header.local_trigger_time = local_trigger_time;
 	header.tcb_trigger_number = tcb_trigger_number;
 	header.channel = channel;
 
@@ -67,3 +73,10 @@ size_t DAQTypeBParser::eventSize(const PacketHeader& header) const {
     return static_cast<size_t>(header.data_length * 4);
 }
 
+size_t DAQTypeBParser::eventSize(const char* data ) const{
+    return 0;
+}
+
+size_t DAQTypeBParser::findEnd(size_t filesize,const char* data ) const{
+    return 0;
+}
