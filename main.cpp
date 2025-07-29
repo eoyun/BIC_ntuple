@@ -73,11 +73,11 @@ int main( int argc, char * argv[]) {
 
     // Prepare branches
     std::vector<int> MID, ch, trigger_number, data_length, lr, modid, col, row, isY;
-    std::vector<unsigned long long> trigger_time;
+    std::vector<unsigned long long> tcb_trigger_time_apix, trigger_time;
     std::vector<std::string> name;
     std::vector<short> waveform_total;
     std::vector<int> waveform_idx;
-    std::vector<short> tcb_trigger_time_apix, aid_apix, isCol_apix, ch_apix, ts_apix, tot_apix;
+    std::vector<short> aid_apix, isCol_apix, ch_apix, ts_apix, tot_apix;
     std::vector<int> aid_file; 
 
     t->Branch("MID",&MID);
@@ -282,6 +282,8 @@ int main( int argc, char * argv[]) {
     		PacketGroup p = files_apix.at(j)->getHeader(address_vector_apix.at(j).at(0));
 			
 			unsigned long long trig_time_apix = p.apix_struct.tcb_trigger_time;
+			unsigned long long trig_time_apix_tmp = trig_time_apix;
+			//std::cout<<trig_time_apix_tmp<<" | "<<trig_local_time_tmp<<std::endl;
 			auto tot_max = std::max_element(p.apix_struct.tot.begin(),p.apix_struct.tot.end());
 			if (p.apix_struct.tot.size() == 0) {
 				address_vector_apix.at(j).erase(address_vector_apix.at(j).begin());
@@ -289,7 +291,7 @@ int main( int argc, char * argv[]) {
 				continue;
 			}
 			long long time_corr = (long long)trig_time_apix - static_cast<long long>(*tot_max) -(long long) trig_local_time_tmp;
-			std::cout<<time_corr<<std::endl;
+			//std::cout<<time_corr<<std::endl;
 			if (time_corr < -20000) {
 				address_vector_apix.at(j).erase(address_vector_apix.at(j).begin());
 			}
